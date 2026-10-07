@@ -10,6 +10,7 @@ import io.swagger.v3.oas.annotations.tags.Tag;
 import jakarta.validation.Valid;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
+import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PatchMapping;
 import org.springframework.web.bind.annotation.PathVariable;
@@ -33,6 +34,7 @@ public class PayrollController {
     }
 
     @GetMapping
+    @PreAuthorize("hasAuthority('payroll:view')")
     @Operation(summary = "Get payroll records")
     public ResponseEntity<ApiResponse<List<PayrollResponse>>> getPayrolls(
             @RequestParam(required = false) UUID employeeId,
@@ -44,6 +46,7 @@ public class PayrollController {
     }
 
     @GetMapping("/{id}")
+    @PreAuthorize("hasAuthority('payroll:view')")
     @Operation(summary = "Get payroll by ID")
     public ResponseEntity<ApiResponse<PayrollResponse>> getPayrollById(@PathVariable UUID id) {
         return ResponseEntity.ok(ApiResponse.of(
@@ -53,6 +56,7 @@ public class PayrollController {
     }
 
     @PostMapping
+    @PreAuthorize("hasAuthority('payroll:write')")
     @Operation(summary = "Create a payroll record")
     public ResponseEntity<ApiResponse<PayrollResponse>> createPayroll(@Valid @RequestBody PayrollRequest request) {
         return ResponseEntity.status(HttpStatus.CREATED)
@@ -60,6 +64,7 @@ public class PayrollController {
     }
 
     @PatchMapping("/{id}/pay")
+    @PreAuthorize("hasAuthority('payroll:write')")
     @Operation(summary = "Mark a payroll record as paid")
     public ResponseEntity<ApiResponse<PayrollResponse>> markPaid(@PathVariable UUID id) {
         return ResponseEntity.ok(ApiResponse.of("Payroll marked as paid", payrollService.markPaid(id), HttpStatus.OK));

@@ -9,6 +9,7 @@ import io.swagger.v3.oas.annotations.tags.Tag;
 import jakarta.validation.Valid;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
+import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.PostMapping;
@@ -32,6 +33,7 @@ public class AttendanceController {
     }
 
     @GetMapping
+    @PreAuthorize("hasAuthority('attendance:view')")
     @Operation(summary = "Get attendance records")
     public ResponseEntity<ApiResponse<List<AttendanceResponse>>> getAttendances(
             @RequestParam(required = false) UUID employeeId,
@@ -43,6 +45,7 @@ public class AttendanceController {
     }
 
     @GetMapping("/{id}")
+    @PreAuthorize("hasAuthority('attendance:view')")
     @Operation(summary = "Get attendance by ID")
     public ResponseEntity<ApiResponse<AttendanceResponse>> getAttendanceById(@PathVariable UUID id) {
         return ResponseEntity.ok(ApiResponse.of(
@@ -52,6 +55,7 @@ public class AttendanceController {
     }
 
     @PostMapping("/check-in")
+    @PreAuthorize("hasAuthority('attendance:check')")
     @Operation(summary = "Check in an employee")
     public ResponseEntity<ApiResponse<AttendanceResponse>> checkIn(
             @Valid @RequestBody AttendanceCheckRequest request) {
@@ -60,6 +64,7 @@ public class AttendanceController {
     }
 
     @PostMapping("/check-out")
+    @PreAuthorize("hasAuthority('attendance:check')")
     @Operation(summary = "Check out an employee")
     public ResponseEntity<ApiResponse<AttendanceResponse>> checkOut(
             @Valid @RequestBody AttendanceCheckRequest request) {

@@ -9,6 +9,7 @@ import io.swagger.v3.oas.annotations.tags.Tag;
 import jakarta.validation.Valid;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
+import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.PutMapping;
@@ -29,6 +30,7 @@ public class SettingController {
     }
 
     @GetMapping
+    @PreAuthorize("hasAuthority('settings:view')")
     @Operation(summary = "Get all settings")
     public ResponseEntity<ApiResponse<List<SettingResponse>>> getSettings() {
         return ResponseEntity.ok(ApiResponse.of(
@@ -38,6 +40,7 @@ public class SettingController {
     }
 
     @GetMapping("/{key}")
+    @PreAuthorize("hasAuthority('settings:view')")
     @Operation(summary = "Get a setting by key")
     public ResponseEntity<ApiResponse<SettingResponse>> getSetting(@PathVariable String key) {
         return ResponseEntity.ok(ApiResponse.of(
@@ -47,6 +50,7 @@ public class SettingController {
     }
 
     @PutMapping("/{key}")
+    @PreAuthorize("hasAuthority('settings:write')")
     @Operation(summary = "Create or update a setting")
     public ResponseEntity<ApiResponse<SettingResponse>> upsertSetting(
             @PathVariable String key,

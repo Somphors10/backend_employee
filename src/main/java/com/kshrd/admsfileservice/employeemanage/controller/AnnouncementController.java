@@ -9,6 +9,7 @@ import io.swagger.v3.oas.annotations.tags.Tag;
 import jakarta.validation.Valid;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
+import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.web.bind.annotation.DeleteMapping;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PathVariable;
@@ -32,6 +33,7 @@ public class AnnouncementController {
     }
 
     @GetMapping
+    @PreAuthorize("hasAuthority('announcements:view')")
     @Operation(summary = "Get announcements")
     public ResponseEntity<ApiResponse<List<AnnouncementResponse>>> getAnnouncements() {
         return ResponseEntity.ok(ApiResponse.of(
@@ -41,6 +43,7 @@ public class AnnouncementController {
     }
 
     @GetMapping("/{id}")
+    @PreAuthorize("hasAuthority('announcements:view')")
     @Operation(summary = "Get announcement by ID")
     public ResponseEntity<ApiResponse<AnnouncementResponse>> getAnnouncementById(@PathVariable UUID id) {
         return ResponseEntity.ok(ApiResponse.of(
@@ -50,6 +53,7 @@ public class AnnouncementController {
     }
 
     @PostMapping
+    @PreAuthorize("hasAuthority('announcements:write')")
     @Operation(summary = "Create an announcement")
     public ResponseEntity<ApiResponse<AnnouncementResponse>> createAnnouncement(
             @Valid @RequestBody AnnouncementRequest request) {
@@ -61,6 +65,7 @@ public class AnnouncementController {
     }
 
     @PutMapping("/{id}")
+    @PreAuthorize("hasAuthority('announcements:write')")
     @Operation(summary = "Update an announcement")
     public ResponseEntity<ApiResponse<AnnouncementResponse>> updateAnnouncement(
             @PathVariable UUID id,
@@ -72,6 +77,7 @@ public class AnnouncementController {
     }
 
     @DeleteMapping("/{id}")
+    @PreAuthorize("hasAuthority('announcements:write')")
     @Operation(summary = "Delete an announcement")
     public ResponseEntity<ApiResponse<Void>> deleteAnnouncement(@PathVariable UUID id) {
         announcementService.deleteAnnouncement(id);

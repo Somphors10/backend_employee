@@ -1,0 +1,73 @@
+:root {
+    --em-primary: #0ea5e9;
+    --em-primary-dark: #0284c7;
+    --em-primary-light: #7dd3fc;
+    --em-primary-soft: #e0f2fe;
+}
+
+.swagger-ui .topbar {
+    background: linear-gradient(90deg, #0369a1, #0ea5e9);
+    border-bottom: 3px solid #7dd3fc;
+}
+
+.swagger-ui .topbar .download-url-wrapper .select-label {
+    color: #f0f9ff;
+}
+
+.swagger-ui .topbar .download-url-wrapper input[type="text"] {
+    border-color: #7dd3fc;
+}
+
+.swagger-ui .info .title {
+    color: #0369a1;
+}
+
+.swagger-ui .info a {
+    color: #0284c7;
+}
+
+.swagger-ui .btn.authorize {
+    border-color: #0ea5e9;
+    color: #0369a1;
+}
+
+.swagger-ui .btn.authorize svg {
+    fill: #0ea5e9;
+}
+
+.swagger-ui .btn.execute {
+    background-color: #0ea5e9;
+    border-color: #0ea5e9;
+}
+
+.swagger-ui .btn.execute:hover {
+    background-color: #0284c7;
+    border-color: #0284c7;
+}
+
+.swagger-ui .opblock.opblock-get {
+    background: rgba(14, 165, 233, 0.08);
+    border-color: #0ea5e9;
+}
+
+.swagger-ui .opblock.opblock-get .opblock-summary-method {
+    background: #0ea5e9;
+}
+
+.swagger-ui section.models h4 {
+    color: #0369a1;
+}
+
+.swagger-ui .tab li.active {
+    color: #0284c7;
+}
+
+.swagger-ui input[type="text"]:focus,
+.swagger-ui textarea:focus,
+.swagger-ui select:focus {
+    border-color: #0ea5e9;
+}
+
+.swagger-ui .scheme-container {
+    background: #f0f9ff;
+}

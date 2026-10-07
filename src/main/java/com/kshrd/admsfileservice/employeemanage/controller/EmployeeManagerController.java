@@ -9,6 +9,7 @@ import io.swagger.v3.oas.annotations.tags.Tag;
 import jakarta.validation.Valid;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
+import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.web.bind.annotation.DeleteMapping;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PatchMapping;
@@ -31,6 +32,7 @@ public class EmployeeManagerController {
     }
 
     @GetMapping("/{id}/subordinates")
+    @PreAuthorize("hasAuthority('employees:view')")
     @Operation(summary = "Get employees who report to this manager")
     public ResponseEntity<ApiResponse<List<EmployeeResponse>>> getSubordinates(@PathVariable UUID id) {
         List<EmployeeResponse> subordinates = employeeService.getSubordinates(id);
@@ -38,6 +40,7 @@ public class EmployeeManagerController {
     }
 
     @PatchMapping("/{id}/manager")
+    @PreAuthorize("hasAuthority('employees:write')")
     @Operation(summary = "Assign a manager to an employee")
     public ResponseEntity<ApiResponse<EmployeeResponse>> assignManager(
             @PathVariable UUID id,
@@ -47,6 +50,7 @@ public class EmployeeManagerController {
     }
 
     @DeleteMapping("/{id}/manager")
+    @PreAuthorize("hasAuthority('employees:write')")
     @Operation(summary = "Clear an employee's manager")
     public ResponseEntity<ApiResponse<EmployeeResponse>> clearManager(@PathVariable UUID id) {
         EmployeeResponse employee = employeeService.clearManager(id);

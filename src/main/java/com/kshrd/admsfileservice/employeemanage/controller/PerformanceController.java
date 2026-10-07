@@ -9,6 +9,7 @@ import io.swagger.v3.oas.annotations.tags.Tag;
 import jakarta.validation.Valid;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
+import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.PostMapping;
@@ -31,6 +32,7 @@ public class PerformanceController {
     }
 
     @GetMapping
+    @PreAuthorize("hasAuthority('performance:view')")
     @Operation(summary = "Get performance reviews")
     public ResponseEntity<ApiResponse<List<PerformanceReviewResponse>>> getReviews(
             @RequestParam(required = false) UUID employeeId) {
@@ -41,6 +43,7 @@ public class PerformanceController {
     }
 
     @GetMapping("/{id}")
+    @PreAuthorize("hasAuthority('performance:view')")
     @Operation(summary = "Get performance review by ID")
     public ResponseEntity<ApiResponse<PerformanceReviewResponse>> getReviewById(@PathVariable UUID id) {
         return ResponseEntity.ok(ApiResponse.of(
@@ -50,6 +53,7 @@ public class PerformanceController {
     }
 
     @PostMapping
+    @PreAuthorize("hasAuthority('performance:write')")
     @Operation(summary = "Create a performance review")
     public ResponseEntity<ApiResponse<PerformanceReviewResponse>> createReview(
             @Valid @RequestBody PerformanceReviewRequest request) {

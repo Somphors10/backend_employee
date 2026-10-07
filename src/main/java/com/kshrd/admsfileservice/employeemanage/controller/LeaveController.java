@@ -10,6 +10,7 @@ import io.swagger.v3.oas.annotations.tags.Tag;
 import jakarta.validation.Valid;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
+import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PatchMapping;
 import org.springframework.web.bind.annotation.PathVariable;
@@ -33,6 +34,7 @@ public class LeaveController {
     }
 
     @GetMapping
+    @PreAuthorize("hasAuthority('leaves:view')")
     @Operation(summary = "Get leave requests", description = "Optionally filter by employee and status")
     public ResponseEntity<ApiResponse<List<LeaveResponse>>> getLeaves(
             @RequestParam(required = false) UUID employeeId,
@@ -42,6 +44,7 @@ public class LeaveController {
     }
 
     @GetMapping("/{id}")
+    @PreAuthorize("hasAuthority('leaves:view')")
     @Operation(summary = "Get a leave request by ID")
     public ResponseEntity<ApiResponse<LeaveResponse>> getLeaveById(@PathVariable UUID id) {
         LeaveResponse leave = leaveService.getLeaveById(id);
@@ -49,6 +52,7 @@ public class LeaveController {
     }
 
     @PostMapping
+    @PreAuthorize("hasAuthority('leaves:create')")
     @Operation(summary = "Submit a leave request")
     public ResponseEntity<ApiResponse<LeaveResponse>> createLeave(@Valid @RequestBody LeaveRequest request) {
         LeaveResponse leave = leaveService.createLeave(request);
@@ -57,6 +61,7 @@ public class LeaveController {
     }
 
     @PatchMapping("/{id}/approve")
+    @PreAuthorize("hasAuthority('leaves:decide')")
     @Operation(summary = "Approve a pending leave request")
     public ResponseEntity<ApiResponse<LeaveResponse>> approveLeave(@PathVariable UUID id) {
         LeaveResponse leave = leaveService.approveLeave(id);
@@ -64,6 +69,7 @@ public class LeaveController {
     }
 
     @PatchMapping("/{id}/reject")
+    @PreAuthorize("hasAuthority('leaves:decide')")
     @Operation(summary = "Reject a pending leave request")
     public ResponseEntity<ApiResponse<LeaveResponse>> rejectLeave(@PathVariable UUID id) {
         LeaveResponse leave = leaveService.rejectLeave(id);

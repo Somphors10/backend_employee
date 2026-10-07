@@ -8,6 +8,7 @@ import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.tags.Tag;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
+import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
@@ -25,6 +26,7 @@ public class DashboardController {
     }
 
     @GetMapping("/dashboard")
+    @PreAuthorize("hasAuthority('dashboard:view')")
     @Operation(summary = "Get dashboard totals")
     public ResponseEntity<ApiResponse<DashboardResponse>> getDashboard() {
         return ResponseEntity.ok(ApiResponse.of(
@@ -34,6 +36,7 @@ public class DashboardController {
     }
 
     @GetMapping("/navigation")
+    @PreAuthorize("hasAuthority('dashboard:view')")
     @Operation(summary = "Get sidebar navigation items")
     public ResponseEntity<ApiResponse<List<NavigationItemResponse>>> getNavigation() {
         return ResponseEntity.ok(ApiResponse.of(

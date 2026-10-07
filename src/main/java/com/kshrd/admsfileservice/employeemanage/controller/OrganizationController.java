@@ -9,6 +9,7 @@ import io.swagger.v3.oas.annotations.tags.Tag;
 import jakarta.validation.Valid;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
+import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.web.bind.annotation.DeleteMapping;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PathVariable;
@@ -32,6 +33,7 @@ public class OrganizationController {
     }
 
     @GetMapping
+    @PreAuthorize("hasAuthority('organization:view')")
     @Operation(summary = "Get organization departments")
     public ResponseEntity<ApiResponse<List<OrganizationDepartmentResponse>>> getDepartments() {
         return ResponseEntity.ok(ApiResponse.of(
@@ -41,6 +43,7 @@ public class OrganizationController {
     }
 
     @GetMapping("/{id}")
+    @PreAuthorize("hasAuthority('organization:view')")
     @Operation(summary = "Get department by ID")
     public ResponseEntity<ApiResponse<OrganizationDepartmentResponse>> getDepartmentById(@PathVariable UUID id) {
         return ResponseEntity.ok(ApiResponse.of(
@@ -50,6 +53,7 @@ public class OrganizationController {
     }
 
     @PostMapping
+    @PreAuthorize("hasAuthority('organization:write')")
     @Operation(summary = "Create a department")
     public ResponseEntity<ApiResponse<OrganizationDepartmentResponse>> createDepartment(
             @Valid @RequestBody OrganizationDepartmentRequest request) {
@@ -61,6 +65,7 @@ public class OrganizationController {
     }
 
     @PutMapping("/{id}")
+    @PreAuthorize("hasAuthority('organization:write')")
     @Operation(summary = "Update a department")
     public ResponseEntity<ApiResponse<OrganizationDepartmentResponse>> updateDepartment(
             @PathVariable UUID id,
@@ -72,6 +77,7 @@ public class OrganizationController {
     }
 
     @DeleteMapping("/{id}")
+    @PreAuthorize("hasAuthority('organization:write')")
     @Operation(summary = "Delete a department")
     public ResponseEntity<ApiResponse<Void>> deleteDepartment(@PathVariable UUID id) {
         organizationService.deleteDepartment(id);
