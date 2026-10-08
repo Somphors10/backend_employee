@@ -1,6 +1,7 @@
 package com.kshrd.admsfileservice.employeemanage.service;
 
 import com.kshrd.admsfileservice.employeemanage.model.dto.request.LeaveRequest;
+import com.kshrd.admsfileservice.employeemanage.model.dto.response.LeaveBalanceResponse;
 import com.kshrd.admsfileservice.employeemanage.model.dto.response.LeaveResponse;
 import com.kshrd.admsfileservice.employeemanage.model.enums.LeaveStatus;
 
@@ -17,4 +18,8 @@ public interface LeaveService {
     LeaveResponse approveLeave(UUID id);
 
     LeaveResponse rejectLeave(UUID id);
+
+    LeaveResponse cancelLeave(UUID id);
+
+    List<LeaveBalanceResponse> getBalances(UUID employeeId);
 }

@@ -38,3 +38,6 @@ out/
 
 ### Local secrets ###
 **/application-local.properties
+
+### Uploaded files ###
+/uploads/

@@ -10,6 +10,7 @@ import lombok.NoArgsConstructor;
 
 import java.time.Instant;
 import java.time.LocalDate;
+import java.time.temporal.ChronoUnit;
 import java.util.UUID;
 
 @Data
@@ -25,6 +26,7 @@ public class LeaveResponse {
     private String reason;
     private LeaveStatus status;
     private Instant decidedAt;
+    private long days;
 
     public static LeaveResponse from(Leave leave) {
         return LeaveResponse.builder()
@@ -36,6 +38,7 @@ public class LeaveResponse {
                 .reason(leave.getReason())
                 .status(leave.getStatus())
                 .decidedAt(leave.getDecidedAt())
+                .days(ChronoUnit.DAYS.between(leave.getStartDate(), leave.getEndDate()) + 1)
                 .build();
     }
 }

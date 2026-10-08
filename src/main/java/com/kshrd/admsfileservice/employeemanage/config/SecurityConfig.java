@@ -76,7 +76,17 @@ public class SecurityConfig {
                         .requestMatchers(HttpMethod.PATCH, "/api/v1/employees/**").hasAuthority("employees:write")
                         .requestMatchers(HttpMethod.DELETE, "/api/v1/employees/**").hasAuthority("employees:write")
 
-                        .requestMatchers(HttpMethod.PATCH, "/api/v1/leaves/**").hasAuthority("leaves:decide")
+                        .requestMatchers(HttpMethod.PATCH, "/api/v1/leaves/*/approve").hasAuthority("leaves:decide")
+                        .requestMatchers(HttpMethod.PATCH, "/api/v1/leaves/*/reject").hasAuthority("leaves:decide")
+                        .requestMatchers("/api/v1/users/**").hasAuthority("users:write")
+                        .requestMatchers(HttpMethod.GET, "/api/v1/holidays/**").hasAuthority("holidays:view")
+                        .requestMatchers("/api/v1/holidays/**").hasAuthority("holidays:write")
+                        .requestMatchers(HttpMethod.GET, "/api/v1/overtimes/**").hasAuthority("overtime:view")
+                        .requestMatchers(HttpMethod.PATCH, "/api/v1/overtimes/**").hasAuthority("overtime:decide")
+                        .requestMatchers("/api/v1/overtimes/**").hasAuthority("overtime:write")
+                        .requestMatchers("/api/v1/reports/**").hasAuthority("reports:view")
+                        .requestMatchers(HttpMethod.PUT, "/api/v1/performance-reviews/**").hasAuthority("performance:write")
+                        .requestMatchers(HttpMethod.DELETE, "/api/v1/performance-reviews/**").hasAuthority("performance:write")
 
                         .requestMatchers(HttpMethod.POST, "/api/v1/organization/**").hasAuthority("organization:write")
                         .requestMatchers(HttpMethod.PUT, "/api/v1/organization/**").hasAuthority("organization:write")
@@ -87,6 +97,7 @@ public class SecurityConfig {
                         .requestMatchers(HttpMethod.DELETE, "/api/v1/announcements/**").hasAuthority("announcements:write")
 
                         .requestMatchers(HttpMethod.POST, "/api/v1/documents/**").hasAuthority("documents:write")
+                        .requestMatchers(HttpMethod.PUT, "/api/v1/documents/**").hasAuthority("documents:write")
                         .requestMatchers(HttpMethod.DELETE, "/api/v1/documents/**").hasAuthority("documents:write")
 
                         .requestMatchers(HttpMethod.POST, "/api/v1/performance-reviews/**").hasAuthority("performance:write")

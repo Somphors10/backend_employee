@@ -7,6 +7,7 @@ import lombok.Builder;
 import lombok.Data;
 import lombok.NoArgsConstructor;
 
+import java.math.BigDecimal;
 import java.time.LocalDate;
 import java.time.LocalTime;
 import java.util.UUID;
@@ -22,6 +23,7 @@ public class AttendanceResponse {
     private LocalTime checkIn;
     private LocalTime checkOut;
     private AttendanceStatus status;
+    private BigDecimal overtimeHours;
 
     public static AttendanceResponse from(Attendance attendance) {
         return AttendanceResponse.builder()
@@ -31,6 +33,7 @@ public class AttendanceResponse {
                 .checkIn(attendance.getCheckIn())
                 .checkOut(attendance.getCheckOut())
                 .status(attendance.getStatus())
+                .overtimeHours(attendance.getOvertimeHours())
                 .build();
     }
 }

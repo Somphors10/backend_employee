@@ -2,6 +2,7 @@ package com.kshrd.admsfileservice.employeemanage.controller;
 
 import com.kshrd.admsfileservice.employeemanage.model.dto.request.LeaveRequest;
 import com.kshrd.admsfileservice.employeemanage.model.dto.response.ApiResponse;
+import com.kshrd.admsfileservice.employeemanage.model.dto.response.LeaveBalanceResponse;
 import com.kshrd.admsfileservice.employeemanage.model.dto.response.LeaveResponse;
 import com.kshrd.admsfileservice.employeemanage.model.enums.LeaveStatus;
 import com.kshrd.admsfileservice.employeemanage.service.LeaveService;
@@ -43,6 +44,17 @@ public class LeaveController {
         return ResponseEntity.ok(ApiResponse.of("Leave requests retrieved successfully", leaves, HttpStatus.OK));
     }
 
+    @GetMapping("/balances")
+    @PreAuthorize("hasAuthority('leaves:view')")
+    @Operation(summary = "Get leave balances for an employee")
+    public ResponseEntity<ApiResponse<List<LeaveBalanceResponse>>> getBalances(
+            @RequestParam(required = false) UUID employeeId) {
+        return ResponseEntity.ok(ApiResponse.of(
+                "Leave balances retrieved successfully",
+                leaveService.getBalances(employeeId),
+                HttpStatus.OK));
+    }
+
     @GetMapping("/{id}")
     @PreAuthorize("hasAuthority('leaves:view')")
     @Operation(summary = "Get a leave request by ID")
@@ -74,5 +86,15 @@ public class LeaveController {
     public ResponseEntity<ApiResponse<LeaveResponse>> rejectLeave(@PathVariable UUID id) {
         LeaveResponse leave = leaveService.rejectLeave(id);
         return ResponseEntity.ok(ApiResponse.of("Leave request rejected successfully", leave, HttpStatus.OK));
+    }
+
+    @PatchMapping("/{id}/cancel")
+    @PreAuthorize("hasAuthority('leaves:create')")
+    @Operation(summary = "Cancel a pending leave request")
+    public ResponseEntity<ApiResponse<LeaveResponse>> cancelLeave(@PathVariable UUID id) {
+        return ResponseEntity.ok(ApiResponse.of(
+                "Leave request cancelled successfully",
+                leaveService.cancelLeave(id),
+                HttpStatus.OK));
     }
 }

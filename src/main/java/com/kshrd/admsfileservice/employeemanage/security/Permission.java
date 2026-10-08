@@ -31,6 +31,15 @@ public final class Permission {
     public static final String SETTINGS_VIEW = "settings:view";
     public static final String SETTINGS_WRITE = "settings:write";
 
+    public static final String USERS_WRITE = "users:write";
+    public static final String HOLIDAYS_VIEW = "holidays:view";
+    public static final String HOLIDAYS_WRITE = "holidays:write";
+    public static final String OVERTIME_VIEW = "overtime:view";
+    public static final String OVERTIME_WRITE = "overtime:write";
+    public static final String OVERTIME_DECIDE = "overtime:decide";
+    public static final String REPORTS_VIEW = "reports:view";
+    public static final String NOTIFICATIONS_VIEW = "notifications:view";
+
     private Permission() {
     }
 }

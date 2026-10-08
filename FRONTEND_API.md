@@ -149,7 +149,7 @@ if (can(user, 'employees:write')) { /* show Add employee */ }
 | `leaves:decide` | yes | yes | yes | no |
 | `attendance:view` | yes | yes | yes | yes |
 | `attendance:check` | yes | yes | yes | yes |
-| `payroll:view` | yes | yes | no | no |
+| `payroll:view` | yes | yes | yes | yes |
 | `payroll:write` | yes | yes | no | no |
 | `documents:view` | yes | yes | yes | yes |
 | `documents:write` | yes | yes | no | no |
@@ -161,6 +161,16 @@ if (can(user, 'employees:write')) { /* show Add employee */ }
 | `announcements:write` | yes | yes | no | no |
 | `settings:view` | yes | yes | no | no |
 | `settings:write` | yes | no | no | no |
+| `users:write` | yes | no | no | no |
+| `holidays:view` | yes | yes | yes | yes |
+| `holidays:write` | yes | yes | no | no |
+| `overtime:view` | yes | yes | yes | yes |
+| `overtime:write` | yes | yes | yes | yes |
+| `overtime:decide` | yes | yes | yes | no |
+| `reports:view` | yes | yes | no | no |
+| `notifications:view` | yes | yes | yes | yes |
+
+Data scope: **ADMIN / HR** see all employees. **MANAGER** sees self + direct reports. **EMPLOYEE** sees self. List endpoints still return a JSON array (no pagination wrapper).
 
 Suggested sidebar:
 
@@ -174,7 +184,11 @@ const NAV = [
   { key: 'documents', path: '/documents', permission: 'documents:view' },
   { key: 'performance', path: '/performance', permission: 'performance:view' },
   { key: 'organization', path: '/organization', permission: 'organization:view' },
+  { key: 'overtime', path: '/overtime', permission: 'overtime:view' },
+  { key: 'holidays', path: '/holidays', permission: 'holidays:view' },
   { key: 'announcements', path: '/announcements', permission: 'announcements:view' },
+  { key: 'reports', path: '/reports', permission: 'reports:view' },
+  { key: 'users', path: '/users', permission: 'users:write' },
   { key: 'settings', path: '/settings', permission: 'settings:view' },
 ];
 ```
@@ -188,8 +202,8 @@ const NAV = [
 | `role` | `ADMIN`, `HR`, `MANAGER`, `EMPLOYEE` |
 | `status` (employee) | `ACTIVE`, `INACTIVE` |
 | `type` (leave) | `ANNUAL`, `SICK`, `UNPAID` |
-| `status` (leave) | `PENDING`, `APPROVED`, `REJECTED` |
-| `status` (attendance) | `PRESENT`, `ABSENT`, `LATE`, `ON_LEAVE` |
+| `status` (leave) | `PENDING`, `APPROVED`, `REJECTED`, `CANCELLED` |
+| `status` (attendance / overtime) | attendance: `PRESENT`, `ABSENT`, `LATE`, `ON_LEAVE`; overtime: `PENDING`, `APPROVED`, `REJECTED` |
 | `status` (payroll) | `PENDING`, `PAID` |
 | `documentType` | `CONTRACT`, `ID_CARD`, `CERTIFICATE`, `OTHER` |
 | `eventType` (history) | `CREATED`, `UPDATED`, `STATUS_CHANGED`, `TRANSFERRED`, `MANAGER_ASSIGNED`, `MANAGER_CLEARED`, `DELETED` |
@@ -206,6 +220,7 @@ const NAV = [
 |---|---|---|---|
 | POST | `/api/v1/auth/login` | public | `{ username, password }` |
 | GET | `/api/v1/auth/me` | logged in | — |
+| POST | `/api/v1/auth/password` | logged in | `{ currentPassword, newPassword }` |
 
 ---
 
@@ -250,7 +265,11 @@ Create / update body:
   "phoneNumber": "012111112",
   "position": "Software Engineer",
   "department": "IT",
-  "hireDate": "2021-06-01"
+  "hireDate": "2021-06-01",
+  "nationalId": "010101234",
+  "dateOfBirth": "1995-04-12",
+  "address": "Phnom Penh",
+  "salary": 1200
 }
 ```
 
@@ -267,7 +286,13 @@ Employee `payload`:
   "department": "IT",
   "hireDate": "2021-06-01",
   "status": "ACTIVE",
-  "managerId": "…"
+  "managerId": "…",
+  "nationalId": "010101234",
+  "dateOfBirth": "1995-04-12",
+  "address": "Phnom Penh",
+  "salary": 1200,
+  "hasPhoto": false,
+  "photoUrl": null
 }
 ```
 
@@ -277,11 +302,13 @@ Employee `payload`:
 
 | Method | Path | Permission | Query / body |
 |---|---|---|---|
-| GET | `/api/v1/leaves` | `leaves:view` | `?employeeId=&status=PENDING\|APPROVED\|REJECTED` |
+| GET | `/api/v1/leaves` | `leaves:view` | `?employeeId=&status=PENDING\|APPROVED\|REJECTED\|CANCELLED` |
+| GET | `/api/v1/leaves/balances` | `leaves:view` | `?employeeId=` (required unless the user has a linked employee) |
 | GET | `/api/v1/leaves/{id}` | `leaves:view` | — |
 | POST | `/api/v1/leaves` | `leaves:create` | create body |
 | PATCH | `/api/v1/leaves/{id}/approve` | `leaves:decide` | — |
 | PATCH | `/api/v1/leaves/{id}/reject` | `leaves:decide` | — |
+| PATCH | `/api/v1/leaves/{id}/cancel` | `leaves:create` | own pending request only |
 
 Create body:
 
@@ -295,7 +322,9 @@ Create body:
 }
 ```
 
-`payload`: `{ id, employeeId, type, startDate, endDate, reason, status, decidedAt }`
+`payload`: `{ id, employeeId, type, startDate, endDate, reason, status, decidedAt, days }`
+
+Balances `payload`: `[{ employeeId, year, type, entitled, used, pending, remaining }]`
 
 ---
 
@@ -303,12 +332,13 @@ Create body:
 
 | Method | Path | Permission | Query / body |
 |---|---|---|---|
-| GET | `/api/v1/attendances` | `attendance:view` | `?employeeId=&date=2026-10-07` |
+| GET | `/api/v1/attendances` | `attendance:view` | `?employeeId=&date=2026-10-07` or `?from=&to=` (`date` wins over range) |
 | GET | `/api/v1/attendances/{id}` | `attendance:view` | — |
 | POST | `/api/v1/attendances/check-in` | `attendance:check` | `{ "employeeId": "…" }` |
 | POST | `/api/v1/attendances/check-out` | `attendance:check` | `{ "employeeId": "…" }` |
+| PATCH | `/api/v1/attendances/{id}` | `employees:write` | `{ checkIn, checkOut, status, overtimeHours }` (all optional) |
 
-`payload`: `{ id, employeeId, workDate, checkIn, checkOut, status }`  
+`payload`: `{ id, employeeId, workDate, checkIn, checkOut, status, overtimeHours }`  
 `checkIn` / `checkOut` look like `"08:15:00"`.
 
 ---
@@ -319,6 +349,7 @@ Create body:
 |---|---|---|---|
 | GET | `/api/v1/payrolls` | `payroll:view` | `?employeeId=&status=PENDING\|PAID` |
 | GET | `/api/v1/payrolls/{id}` | `payroll:view` | — |
+| GET | `/api/v1/payrolls/{id}/payslip` | `payroll:view` | PDF; send `Authorization` (same as document files) |
 | POST | `/api/v1/payrolls` | `payroll:write` | create body |
 | PATCH | `/api/v1/payrolls/{id}/pay` | `payroll:write` | marks as `PAID` |
 
@@ -327,34 +358,46 @@ Create body:
   "employeeId": "…",
   "periodStart": "2026-01-01",
   "periodEnd": "2026-01-31",
-  "amount": 1200
+  "basicSalary": 1200,
+  "allowances": 80,
+  "deductions": 20,
+  "tax": 50
 }
 ```
 
-`payload`: `{ id, employeeId, periodStart, periodEnd, amount, status }`
+`amount` is optional if `basicSalary` is set. Net pay = basic + allowances − deductions − tax.
+
+`payload`: `{ id, employeeId, periodStart, periodEnd, amount, basicSalary, allowances, deductions, tax, netAmount, status }`
 
 ---
 
 ### Documents
 
-| Method | Path | Permission | Query / body |
+Files are stored on disk. Allowed types: `pdf`, `png`, `jpg`, `jpeg`, `doc`, `docx`, `webp`. Max size: **10MB**.
+
+| Method | Path | Permission | Notes |
 |---|---|---|---|
 | GET | `/api/v1/documents` | `documents:view` | `?employeeId=` |
-| GET | `/api/v1/documents/{id}` | `documents:view` | — |
-| POST | `/api/v1/documents` | `documents:write` | create body |
-| DELETE | `/api/v1/documents/{id}` | `documents:write` | — |
+| GET | `/api/v1/documents/{id}` | `documents:view` | metadata |
+| GET | `/api/v1/documents/{id}/file` | `documents:view` | binary download; send `Authorization` header (do not use a plain `<a href>`) |
+| POST | `/api/v1/documents` | `documents:write` | `multipart/form-data` |
+| PUT | `/api/v1/documents/{id}` | `documents:write` | `multipart/form-data`; `file` is optional |
+| DELETE | `/api/v1/documents/{id}` | `documents:write` | deletes metadata and the stored file |
 
-```json
-{
-  "employeeId": "…",
-  "title": "Employment Contract",
-  "fileUrl": "https://files.company.local/docs/1.pdf",
-  "documentType": "CONTRACT"
-}
-```
+**Upload (POST)** — `Content-Type: multipart/form-data`
 
-`payload`: `{ id, employeeId, title, fileUrl, documentType, uploadedAt }`  
-This stores a URL, not a file upload.
+| Field | Type | Required |
+|---|---|---|
+| `employeeId` | UUID | yes |
+| `title` | string | yes |
+| `documentType` | `CONTRACT` / `ID_CARD` / `CERTIFICATE` / `OTHER` | yes |
+| `file` | file | yes |
+
+**Update (PUT)** — same fields except `employeeId` is not used; send `title`, `documentType`, and/or `file`.
+
+`payload`: `{ id, employeeId, title, fileUrl, originalFileName, contentType, fileSize, hasFile, documentType, uploadedAt }`
+
+`fileUrl` is `/api/v1/documents/{id}/file` when `hasFile` is true. Open it with `fetch` + Bearer token, then `URL.createObjectURL(blob)`.
 
 ---
 
@@ -365,6 +408,8 @@ This stores a URL, not a file upload.
 | GET | `/api/v1/performance-reviews` | `performance:view` | `?employeeId=` |
 | GET | `/api/v1/performance-reviews/{id}` | `performance:view` | — |
 | POST | `/api/v1/performance-reviews` | `performance:write` | create body |
+| PUT | `/api/v1/performance-reviews/{id}` | `performance:write` | same as create |
+| DELETE | `/api/v1/performance-reviews/{id}` | `performance:write` | — |
 
 ```json
 {
@@ -434,7 +479,65 @@ This stores a URL, not a file upload.
 | PUT | `/api/v1/settings/{key}` | `settings:write` | `{ "value": "light" }` |
 
 `payload`: `{ key, value }`  
-Example keys: `company.name`, `theme.mode`, `theme.primary` (`#0ea5e9`).
+Example keys: `company.name`, `theme.mode`, `theme.primary` (`#0ea5e9`), `leave.annual-days`, `leave.sick-days`.
+
+---
+
+### Holidays
+
+| Method | Path | Permission | Body |
+|---|---|---|---|
+| GET | `/api/v1/holidays` | `holidays:view` | — |
+| POST | `/api/v1/holidays` | `holidays:write` | `{ name, holidayDate, paid }` |
+| PUT | `/api/v1/holidays/{id}` | `holidays:write` | same fields (optional) |
+| DELETE | `/api/v1/holidays/{id}` | `holidays:write` | — |
+
+`payload`: `{ id, name, holidayDate, paid }`
+
+---
+
+### Overtime
+
+| Method | Path | Permission | Query / body |
+|---|---|---|---|
+| GET | `/api/v1/overtimes` | `overtime:view` | `?employeeId=` |
+| POST | `/api/v1/overtimes` | `overtime:write` | `{ employeeId, workDate, hours, reason }` |
+| PATCH | `/api/v1/overtimes/{id}/approve` | `overtime:decide` | — |
+| PATCH | `/api/v1/overtimes/{id}/reject` | `overtime:decide` | — |
+
+`payload`: `{ id, employeeId, workDate, hours, reason, status, decidedAt }`
+
+---
+
+### Notifications
+
+| Method | Path | Permission | Notes |
+|---|---|---|---|
+| GET | `/api/v1/notifications` | `notifications:view` | current user only |
+| PATCH | `/api/v1/notifications/{id}/read` | `notifications:view` | — |
+
+`payload`: `{ id, title, message, read, createdAt }`
+
+---
+
+### Users (login accounts)
+
+| Method | Path | Permission | Body |
+|---|---|---|---|
+| GET | `/api/v1/users` | `users:write` | — |
+| POST | `/api/v1/users` | `users:write` | `{ username, password, role, employeeId, enabled }` |
+| PUT | `/api/v1/users/{id}` | `users:write` | same fields; password optional |
+| DELETE | `/api/v1/users/{id}` | `users:write` | — |
+
+`payload`: `{ id, username, role, employeeId, enabled }` (password is never returned)
+
+---
+
+### Reports
+
+| Method | Path | Permission | `payload` |
+|---|---|---|---|
+| GET | `/api/v1/reports/summary` | `reports:view` | `{ employees, pendingLeaves, todayAttendance, pendingPayrolls, pendingOvertimes }` |
 
 ---
 
@@ -445,13 +548,18 @@ Example keys: `company.name`, `theme.mode`, `theme.primary` (`#0ea5e9`).
 | Dashboard | `GET /dashboard`, `GET /employees`, `GET /leaves?status=PENDING` | — |
 | Employees | `GET /employees` or `/employees/search` | POST/PUT/DELETE employee |
 | Employee detail | `GET /employees/{id}`, `/history`, `/subordinates` | status, transfer, manager |
-| Leaves | `GET /leaves` | POST leave, PATCH approve/reject |
-| Attendance | `GET /attendances` | POST check-in / check-out |
-| Payroll | `GET /payrolls` | POST payroll, PATCH pay |
-| Documents | `GET /documents` | POST / DELETE |
-| Performance | `GET /performance-reviews` | POST review |
+| Leaves | `GET /leaves`, `GET /leaves/balances` | POST leave, PATCH approve/reject/cancel |
+| Attendance | `GET /attendances?from=&to=` | POST check-in / check-out, PATCH correct |
+| Payroll | `GET /payrolls` | POST payroll, PATCH pay, GET payslip PDF |
+| Documents | `GET /documents` | POST upload, GET `/{id}/file`, PUT update, DELETE |
+| Performance | `GET /performance-reviews` | POST / PUT / DELETE review |
 | Organization | `GET /organization/departments` | POST / PUT / DELETE |
+| Overtime | `GET /overtimes` | POST overtime, PATCH approve/reject |
+| Holidays | `GET /holidays` | POST / PUT / DELETE |
 | Announcements | `GET /announcements` | POST / PUT / DELETE |
+| Reports | `GET /reports/summary` | — |
+| Users | `GET /users` | POST / PUT / DELETE |
+| Profile | `GET /notifications` | POST `/auth/password`, PATCH notification read |
 | Settings | `GET /settings` | PUT `/settings/{key}` |
 
 ---

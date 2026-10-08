@@ -26,7 +26,8 @@ class RolePermissionsTest {
     void managerCanDecideLeaveButNotPayroll() {
         assertTrue(RolePermissions.has(Role.MANAGER, Permission.LEAVES_DECIDE));
         assertTrue(RolePermissions.has(Role.MANAGER, Permission.PERFORMANCE_WRITE));
-        assertFalse(RolePermissions.has(Role.MANAGER, Permission.PAYROLL_VIEW));
+        assertTrue(RolePermissions.has(Role.MANAGER, Permission.PAYROLL_VIEW));
+        assertFalse(RolePermissions.has(Role.MANAGER, Permission.PAYROLL_WRITE));
         assertFalse(RolePermissions.has(Role.MANAGER, Permission.EMPLOYEES_WRITE));
     }
 

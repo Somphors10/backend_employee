@@ -38,6 +38,14 @@ public class Payroll {
     @Column(nullable = false)
     private BigDecimal amount;
 
+    private BigDecimal basicSalary;
+
+    private BigDecimal allowances;
+
+    private BigDecimal deductions;
+
+    private BigDecimal tax;
+
     @Enumerated(EnumType.STRING)
     @Column(nullable = false)
     private PayrollStatus status;

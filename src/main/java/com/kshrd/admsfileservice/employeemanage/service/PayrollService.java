@@ -15,4 +15,6 @@ public interface PayrollService {
     PayrollResponse createPayroll(PayrollRequest request);
 
     PayrollResponse markPaid(UUID id);
+
+    StoredDocument getPayslip(UUID id);
 }

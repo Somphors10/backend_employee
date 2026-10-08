@@ -50,10 +50,28 @@ class SecurityRoleTest {
     }
 
     @Test
-    void employeeCannotReadPayroll() throws Exception {
+    void employeeCanReadPayroll() throws Exception {
         String token = login("sec-employee", "employee123");
 
         mockMvc.perform(get("/api/v1/payrolls").header("Authorization", "Bearer " + token))
+                .andExpect(status().isOk());
+    }
+
+    @Test
+    void employeeCannotCreatePayroll() throws Exception {
+        String token = login("sec-employee", "employee123");
+
+        mockMvc.perform(post("/api/v1/payrolls")
+                        .header("Authorization", "Bearer " + token)
+                        .contentType(MediaType.APPLICATION_JSON)
+                        .content("""
+                                {
+                                  "employeeId": "3fa85f64-5717-4562-b3fc-2c963f66afa6",
+                                  "periodStart": "2026-01-01",
+                                  "periodEnd": "2026-01-31",
+                                  "basicSalary": 1000
+                                }
+                                """))
                 .andExpect(status().isForbidden());
     }
 

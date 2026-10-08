@@ -52,13 +52,17 @@ public class DashboardServiceImpl implements DashboardService {
                 item("dashboard", "Dashboard", "/dashboard", "LIVE"),
                 item("employees", "Employees", "/employees", "LIVE"),
                 item("leaves", "Leaves", "/leaves", "LIVE"),
-                item("attendance", "Attendance", "/attendance", "COMING_NEXT"),
-                item("payroll", "Payroll", "/payroll", "COMING_NEXT"),
-                item("documents", "Documents", "/documents", "COMING_NEXT"),
-                item("performance", "Performance", "/performance", "COMING_NEXT"),
-                item("organization", "Organization", "/organization", "COMING_NEXT"),
-                item("announcements", "Announcements", "/announcements", "COMING_NEXT"),
-                item("settings", "Settings", "/settings", "COMING_NEXT")
+                item("attendance", "Attendance", "/attendance", "LIVE"),
+                item("payroll", "Payroll", "/payroll", "LIVE"),
+                item("documents", "Documents", "/documents", "LIVE"),
+                item("performance", "Performance", "/performance", "LIVE"),
+                item("organization", "Organization", "/organization", "LIVE"),
+                item("overtime", "Overtime", "/overtime", "LIVE"),
+                item("holidays", "Holidays", "/holidays", "LIVE"),
+                item("announcements", "Announcements", "/announcements", "LIVE"),
+                item("reports", "Reports", "/reports", "LIVE"),
+                item("users", "Users", "/users", "LIVE"),
+                item("settings", "Settings", "/settings", "LIVE")
         );
     }
 

@@ -7,6 +7,7 @@ import lombok.Builder;
 import lombok.Data;
 import lombok.NoArgsConstructor;
 
+import java.math.BigDecimal;
 import java.time.LocalDate;
 import java.util.UUID;
 
@@ -25,6 +26,12 @@ public class EmployeeResponse {
     private LocalDate hireDate;
     private EmploymentStatus status;
     private UUID managerId;
+    private String nationalId;
+    private LocalDate dateOfBirth;
+    private String address;
+    private BigDecimal salary;
+    private boolean hasPhoto;
+    private String photoUrl;
 
     public static EmployeeResponse from(Employee employee) {
         EmploymentStatus status = employee.getStatus() == null
@@ -41,6 +48,14 @@ public class EmployeeResponse {
                 .hireDate(employee.getHireDate())
                 .status(status)
                 .managerId(employee.getManagerId())
+                .nationalId(employee.getNationalId())
+                .dateOfBirth(employee.getDateOfBirth())
+                .address(employee.getAddress())
+                .salary(employee.getSalary())
+                .hasPhoto(employee.getPhotoFileName() != null && !employee.getPhotoFileName().isBlank())
+                .photoUrl(employee.getPhotoFileName() == null || employee.getPhotoFileName().isBlank()
+                        ? null
+                        : "/api/v1/employees/" + employee.getId() + "/photo")
                 .build();
     }
 }

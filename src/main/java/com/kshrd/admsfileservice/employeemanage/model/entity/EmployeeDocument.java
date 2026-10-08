@@ -34,6 +34,14 @@ public class EmployeeDocument {
     @Column(nullable = false)
     private String fileUrl;
 
+    private String originalFileName;
+
+    private String storedFileName;
+
+    private String contentType;
+
+    private Long fileSize;
+
     @Enumerated(EnumType.STRING)
     @Column(nullable = false)
     private DocumentType documentType;
