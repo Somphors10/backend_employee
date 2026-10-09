@@ -12,4 +12,8 @@ public interface PerformanceService {
     PerformanceReviewResponse getReviewById(UUID id);
 
     PerformanceReviewResponse createReview(PerformanceReviewRequest request);
+
+    PerformanceReviewResponse updateReview(UUID id, PerformanceReviewRequest request);
+
+    void deleteReview(UUID id);
 }

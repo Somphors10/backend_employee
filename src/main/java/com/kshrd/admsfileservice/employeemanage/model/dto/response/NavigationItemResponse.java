@@ -14,4 +14,5 @@ public class NavigationItemResponse {
     private String label;
     private String path;
     private String status;
+    private String permission;
 }

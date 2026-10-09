@@ -25,9 +25,20 @@ class RolePermissionsTest {
     @Test
     void managerCanDecideLeaveButNotPayroll() {
         assertTrue(RolePermissions.has(Role.MANAGER, Permission.LEAVES_DECIDE));
+        assertTrue(RolePermissions.has(Role.MANAGER, Permission.EMPLOYEES_DIRECTORY));
         assertTrue(RolePermissions.has(Role.MANAGER, Permission.PERFORMANCE_WRITE));
-        assertFalse(RolePermissions.has(Role.MANAGER, Permission.PAYROLL_VIEW));
+        assertTrue(RolePermissions.has(Role.MANAGER, Permission.PAYROLL_VIEW));
+        assertFalse(RolePermissions.has(Role.MANAGER, Permission.PAYROLL_WRITE));
         assertFalse(RolePermissions.has(Role.MANAGER, Permission.EMPLOYEES_WRITE));
+    }
+
+    @Test
+    void hrCanViewRolesMatrixButAdminManagesUsers() {
+        assertTrue(RolePermissions.has(Role.HR, Permission.ROLES_VIEW));
+        assertFalse(RolePermissions.has(Role.HR, Permission.USERS_WRITE));
+        assertTrue(RolePermissions.has(Role.ADMIN, Permission.ROLES_VIEW));
+        assertTrue(RolePermissions.has(Role.ADMIN, Permission.USERS_WRITE));
+        assertFalse(RolePermissions.has(Role.EMPLOYEE, Permission.ROLES_VIEW));
     }
 
     @Test
@@ -36,6 +47,8 @@ class RolePermissionsTest {
         assertTrue(RolePermissions.has(Role.EMPLOYEE, Permission.ATTENDANCE_CHECK));
         assertFalse(RolePermissions.has(Role.EMPLOYEE, Permission.LEAVES_DECIDE));
         assertFalse(RolePermissions.has(Role.EMPLOYEE, Permission.EMPLOYEES_WRITE));
+        assertFalse(RolePermissions.has(Role.EMPLOYEE, Permission.EMPLOYEES_DIRECTORY));
+        assertFalse(RolePermissions.has(Role.EMPLOYEE, Permission.ORGANIZATION_WRITE));
         assertFalse(RolePermissions.has(Role.EMPLOYEE, Permission.SETTINGS_VIEW));
     }
 }

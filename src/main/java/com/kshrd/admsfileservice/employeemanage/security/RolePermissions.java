@@ -14,28 +14,40 @@ public final class RolePermissions {
             Permission.LEAVES_CREATE,
             Permission.ATTENDANCE_VIEW,
             Permission.ATTENDANCE_CHECK,
+            Permission.PAYROLL_VIEW,
             Permission.DOCUMENTS_VIEW,
             Permission.PERFORMANCE_VIEW,
             Permission.ORGANIZATION_VIEW,
-            Permission.ANNOUNCEMENTS_VIEW
+            Permission.ANNOUNCEMENTS_VIEW,
+            Permission.HOLIDAYS_VIEW,
+            Permission.OVERTIME_VIEW,
+            Permission.OVERTIME_WRITE,
+            Permission.NOTIFICATIONS_VIEW
     );
 
     private static final List<String> MANAGER = concat(EMPLOYEE, List.of(
+            Permission.EMPLOYEES_DIRECTORY,
             Permission.LEAVES_DECIDE,
-            Permission.PERFORMANCE_WRITE
+            Permission.PERFORMANCE_WRITE,
+            Permission.OVERTIME_DECIDE
     ));
 
     private static final List<String> HR = concat(MANAGER, List.of(
             Permission.EMPLOYEES_WRITE,
-            Permission.PAYROLL_VIEW,
             Permission.PAYROLL_WRITE,
             Permission.DOCUMENTS_WRITE,
             Permission.ORGANIZATION_WRITE,
             Permission.ANNOUNCEMENTS_WRITE,
-            Permission.SETTINGS_VIEW
+            Permission.SETTINGS_VIEW,
+            Permission.HOLIDAYS_WRITE,
+            Permission.REPORTS_VIEW,
+            Permission.ROLES_VIEW
     ));
 
-    private static final List<String> ADMIN = concat(HR, List.of(Permission.SETTINGS_WRITE));
+    private static final List<String> ADMIN = concat(HR, List.of(
+            Permission.SETTINGS_WRITE,
+            Permission.USERS_WRITE
+    ));
 
     private RolePermissions() {
     }
@@ -54,6 +66,15 @@ public final class RolePermissions {
 
     public static boolean has(Role role, String permission) {
         return forRole(role).contains(permission);
+    }
+
+    public static List<RoleAccess> matrix() {
+        return java.util.Arrays.stream(Role.values())
+                .map(role -> new RoleAccess(role.name(), forRole(role)))
+                .toList();
+    }
+
+    public record RoleAccess(String role, List<String> permissions) {
     }
 
     private static List<String> concat(List<String> base, List<String> extra) {

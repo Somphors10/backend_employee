@@ -12,6 +12,7 @@ import lombok.Builder;
 import lombok.Data;
 import lombok.NoArgsConstructor;
 
+import java.math.BigDecimal;
 import java.time.LocalDate;
 import java.util.UUID;
 
@@ -52,4 +53,14 @@ public class Employee {
     private EmploymentStatus status = EmploymentStatus.ACTIVE;
 
     private UUID managerId;
+
+    private String nationalId;
+
+    private LocalDate dateOfBirth;
+
+    private String address;
+
+    private BigDecimal salary;
+
+    private String photoFileName;
 }

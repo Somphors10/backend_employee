@@ -9,6 +9,7 @@ import lombok.Builder;
 import lombok.Data;
 import lombok.NoArgsConstructor;
 
+import java.math.BigDecimal;
 import java.time.LocalDate;
 
 @Data
@@ -38,4 +39,13 @@ public class EmployeeRequest {
     @NotNull(message = "Hire date is required")
     @PastOrPresent(message = "Hire date cannot be in the future")
     private LocalDate hireDate;
+
+    private String nationalId;
+
+    @PastOrPresent(message = "Date of birth cannot be in the future")
+    private LocalDate dateOfBirth;
+
+    private String address;
+
+    private BigDecimal salary;
 }

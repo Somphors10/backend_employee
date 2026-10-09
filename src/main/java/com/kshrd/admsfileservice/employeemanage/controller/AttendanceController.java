@@ -1,6 +1,7 @@
 package com.kshrd.admsfileservice.employeemanage.controller;
 
 import com.kshrd.admsfileservice.employeemanage.model.dto.request.AttendanceCheckRequest;
+import com.kshrd.admsfileservice.employeemanage.model.dto.request.AttendanceCorrectionRequest;
 import com.kshrd.admsfileservice.employeemanage.model.dto.response.ApiResponse;
 import com.kshrd.admsfileservice.employeemanage.model.dto.response.AttendanceResponse;
 import com.kshrd.admsfileservice.employeemanage.service.AttendanceService;
@@ -11,6 +12,7 @@ import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.web.bind.annotation.GetMapping;
+import org.springframework.web.bind.annotation.PatchMapping;
 import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestBody;
@@ -37,10 +39,12 @@ public class AttendanceController {
     @Operation(summary = "Get attendance records")
     public ResponseEntity<ApiResponse<List<AttendanceResponse>>> getAttendances(
             @RequestParam(required = false) UUID employeeId,
-            @RequestParam(required = false) LocalDate date) {
+            @RequestParam(required = false) LocalDate date,
+            @RequestParam(required = false) LocalDate from,
+            @RequestParam(required = false) LocalDate to) {
         return ResponseEntity.ok(ApiResponse.of(
                 "Attendance records retrieved successfully",
-                attendanceService.getAttendances(employeeId, date),
+                attendanceService.getAttendances(employeeId, date, from, to),
                 HttpStatus.OK));
     }
 
@@ -71,6 +75,18 @@ public class AttendanceController {
         return ResponseEntity.ok(ApiResponse.of(
                 "Checked out successfully",
                 attendanceService.checkOut(request),
+                HttpStatus.OK));
+    }
+
+    @PatchMapping("/{id}")
+    @PreAuthorize("hasAuthority('employees:write')")
+    @Operation(summary = "Correct an attendance record")
+    public ResponseEntity<ApiResponse<AttendanceResponse>> correct(
+            @PathVariable UUID id,
+            @RequestBody AttendanceCorrectionRequest request) {
+        return ResponseEntity.ok(ApiResponse.of(
+                "Attendance updated successfully",
+                attendanceService.correct(id, request),
                 HttpStatus.OK));
     }
 }

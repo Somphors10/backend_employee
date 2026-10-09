@@ -50,10 +50,28 @@ class SecurityRoleTest {
     }
 
     @Test
-    void employeeCannotReadPayroll() throws Exception {
+    void employeeCanReadPayroll() throws Exception {
         String token = login("sec-employee", "employee123");
 
         mockMvc.perform(get("/api/v1/payrolls").header("Authorization", "Bearer " + token))
+                .andExpect(status().isOk());
+    }
+
+    @Test
+    void employeeCannotCreatePayroll() throws Exception {
+        String token = login("sec-employee", "employee123");
+
+        mockMvc.perform(post("/api/v1/payrolls")
+                        .header("Authorization", "Bearer " + token)
+                        .contentType(MediaType.APPLICATION_JSON)
+                        .content("""
+                                {
+                                  "employeeId": "3fa85f64-5717-4562-b3fc-2c963f66afa6",
+                                  "periodStart": "2026-01-01",
+                                  "periodEnd": "2026-01-31",
+                                  "basicSalary": 1000
+                                }
+                                """))
                 .andExpect(status().isForbidden());
     }
 
@@ -63,6 +81,46 @@ class SecurityRoleTest {
 
         mockMvc.perform(get("/api/v1/payrolls").header("Authorization", "Bearer " + token))
                 .andExpect(status().isOk());
+    }
+
+    @Test
+    void employeeCannotReadRbacMatrix() throws Exception {
+        String token = login("sec-employee", "employee123");
+
+        mockMvc.perform(get("/api/v1/rbac/matrix").header("Authorization", "Bearer " + token))
+                .andExpect(status().isForbidden());
+    }
+
+    @Test
+    void adminCanReadRbacMatrix() throws Exception {
+        String token = login("sec-admin", "admin123");
+
+        mockMvc.perform(get("/api/v1/rbac/matrix").header("Authorization", "Bearer " + token))
+                .andExpect(status().isOk());
+    }
+
+    @Test
+    void employeeCannotCreateDepartment() throws Exception {
+        String token = login("sec-employee", "employee123");
+
+        mockMvc.perform(post("/api/v1/employees/departments")
+                        .header("Authorization", "Bearer " + token)
+                        .contentType(MediaType.APPLICATION_JSON)
+                        .content("""
+                                {
+                                  "name": "IT",
+                                  "description": "Engineering"
+                                }
+                                """))
+                .andExpect(status().isForbidden());
+    }
+
+    @Test
+    void employeeCannotReadReports() throws Exception {
+        String token = login("sec-employee", "employee123");
+
+        mockMvc.perform(get("/api/v1/reports/summary").header("Authorization", "Bearer " + token))
+                .andExpect(status().isForbidden());
     }
 
     @Test

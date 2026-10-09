@@ -25,7 +25,14 @@ public class PayrollRequest {
     @NotNull(message = "Period end is required")
     private LocalDate periodEnd;
 
-    @NotNull(message = "Amount is required")
     @Positive(message = "Amount must be greater than 0")
     private BigDecimal amount;
+
+    private BigDecimal basicSalary;
+
+    private BigDecimal allowances;
+
+    private BigDecimal deductions;
+
+    private BigDecimal tax;
 }

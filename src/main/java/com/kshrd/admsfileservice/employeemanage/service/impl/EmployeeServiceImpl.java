@@ -17,6 +17,7 @@ import com.kshrd.admsfileservice.employeemanage.model.enums.EmploymentStatus;
 import com.kshrd.admsfileservice.employeemanage.repository.EmployeeHistoryRepository;
 import com.kshrd.admsfileservice.employeemanage.repository.EmployeeRepository;
 import com.kshrd.admsfileservice.employeemanage.repository.LeaveRepository;
+import com.kshrd.admsfileservice.employeemanage.security.AccessService;
 import com.kshrd.admsfileservice.employeemanage.service.EmployeeService;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
@@ -24,6 +25,7 @@ import org.springframework.transaction.annotation.Transactional;
 import java.time.Instant;
 import java.util.Comparator;
 import java.util.List;
+import java.util.Set;
 import java.util.TreeMap;
 import java.util.UUID;
 import java.util.stream.Collectors;
@@ -34,20 +36,25 @@ public class EmployeeServiceImpl implements EmployeeService {
     private final EmployeeRepository employeeRepository;
     private final EmployeeHistoryRepository employeeHistoryRepository;
     private final LeaveRepository leaveRepository;
+    private final AccessService accessService;
 
     public EmployeeServiceImpl(
             EmployeeRepository employeeRepository,
             EmployeeHistoryRepository employeeHistoryRepository,
-            LeaveRepository leaveRepository) {
+            LeaveRepository leaveRepository,
+            AccessService accessService) {
         this.employeeRepository = employeeRepository;
         this.employeeHistoryRepository = employeeHistoryRepository;
         this.leaveRepository = leaveRepository;
+        this.accessService = accessService;
     }
 
     @Override
     public List<EmployeeResponse> getAllEmployees(String department, String query, EmploymentStatus status) {
         String normalizedQuery = query == null ? "" : query.trim().toLowerCase();
+        Set<UUID> visible = accessService.visibleEmployeeIds();
         return employeeRepository.findAll().stream()
+                .filter(employee -> visible == null || visible.contains(employee.getId()))
                 .filter(employee -> department == null || department.isBlank()
                         || employee.getDepartment().equalsIgnoreCase(department))
                 .filter(employee -> status == null || employee.getStatus() == status)
@@ -60,13 +67,14 @@ public class EmployeeServiceImpl implements EmployeeService {
 
     @Override
     public EmployeeResponse getEmployeeById(UUID id) {
+        accessService.assertCanViewEmployee(id);
         return EmployeeResponse.from(findEmployee(id));
     }
 
     @Override
     public EmployeeResponse createEmployee(EmployeeRequest request) {
         ensureEmailAvailable(request.getEmail(), null);
-        Employee employee = toEmployee(UUID.randomUUID(), request, EmploymentStatus.ACTIVE, null);
+        Employee employee = toEmployee(UUID.randomUUID(), request, EmploymentStatus.ACTIVE, null, null);
         Employee saved = employeeRepository.save(employee);
         recordHistory(saved.getId(), EmployeeEventType.CREATED, "Employee created");
         return EmployeeResponse.from(saved);
@@ -76,7 +84,7 @@ public class EmployeeServiceImpl implements EmployeeService {
     public EmployeeResponse updateEmployee(UUID id, EmployeeRequest request) {
         Employee existing = findEmployee(id);
         ensureEmailAvailable(request.getEmail(), id);
-        Employee updated = toEmployee(id, request, existing.getStatus(), existing.getManagerId());
+        Employee updated = toEmployee(id, request, existing.getStatus(), existing.getManagerId(), existing);
         Employee saved = employeeRepository.save(updated);
         recordHistory(id, EmployeeEventType.UPDATED, "Employee profile updated");
         return EmployeeResponse.from(saved);
@@ -133,6 +141,7 @@ public class EmployeeServiceImpl implements EmployeeService {
 
     @Override
     public List<EmployeeResponse> getSubordinates(UUID id) {
+        accessService.assertCanViewEmployee(id);
         findEmployee(id);
         return employeeRepository.findByManagerId(id).stream()
                 .sorted(Comparator.comparing(Employee::getLastName)
@@ -143,6 +152,7 @@ public class EmployeeServiceImpl implements EmployeeService {
 
     @Override
     public List<EmployeeHistoryResponse> getEmployeeHistory(UUID id) {
+        accessService.assertCanViewEmployee(id);
         findEmployee(id);
         return employeeHistoryRepository.findByEmployeeIdOrderByOccurredAtDesc(id).stream()
                 .map(EmployeeHistoryResponse::from)
@@ -151,7 +161,10 @@ public class EmployeeServiceImpl implements EmployeeService {
 
     @Override
     public EmployeeSummaryResponse getEmployeeSummary() {
-        List<Employee> employees = employeeRepository.findAll();
+        Set<UUID> visible = accessService.visibleEmployeeIds();
+        List<Employee> employees = employeeRepository.findAll().stream()
+                .filter(employee -> visible == null || visible.contains(employee.getId()))
+                .toList();
         long activeEmployees = employees.stream()
                 .filter(employee -> employee.getStatus() == EmploymentStatus.ACTIVE)
                 .count();
@@ -177,6 +190,7 @@ public class EmployeeServiceImpl implements EmployeeService {
     public List<String> getDepartments() {
         return employeeRepository.findAll().stream()
                 .map(Employee::getDepartment)
+                .filter(department -> department != null && !department.isBlank())
                 .distinct()
                 .sorted(String.CASE_INSENSITIVE_ORDER)
                 .toList();
@@ -250,7 +264,12 @@ public class EmployeeServiceImpl implements EmployeeService {
                 .build());
     }
 
-    private Employee toEmployee(UUID id, EmployeeRequest request, EmploymentStatus status, UUID managerId) {
+    private Employee toEmployee(
+            UUID id,
+            EmployeeRequest request,
+            EmploymentStatus status,
+            UUID managerId,
+            Employee existing) {
         return Employee.builder()
                 .id(id)
                 .firstName(request.getFirstName().trim())
@@ -262,6 +281,22 @@ public class EmployeeServiceImpl implements EmployeeService {
                 .hireDate(request.getHireDate())
                 .status(status == null ? EmploymentStatus.ACTIVE : status)
                 .managerId(managerId)
+                .nationalId(firstValue(request.getNationalId(), existing == null ? null : existing.getNationalId()))
+                .dateOfBirth(request.getDateOfBirth() != null
+                        ? request.getDateOfBirth()
+                        : existing == null ? null : existing.getDateOfBirth())
+                .address(firstValue(request.getAddress(), existing == null ? null : existing.getAddress()))
+                .salary(request.getSalary() != null
+                        ? request.getSalary()
+                        : existing == null ? null : existing.getSalary())
+                .photoFileName(existing == null ? null : existing.getPhotoFileName())
                 .build();
+    }
+
+    private String firstValue(String next, String current) {
+        if (next != null && !next.isBlank()) {
+            return next.trim();
+        }
+        return current;
     }
 }

@@ -1,5 +1,6 @@
 package com.kshrd.admsfileservice.employeemanage.controller;
 
+import com.kshrd.admsfileservice.employeemanage.model.dto.request.ChangePasswordRequest;
 import com.kshrd.admsfileservice.employeemanage.model.dto.request.LoginRequest;
 import com.kshrd.admsfileservice.employeemanage.model.dto.response.ApiResponse;
 import com.kshrd.admsfileservice.employeemanage.model.dto.response.AuthResponse;
@@ -35,5 +36,12 @@ public class AuthController {
     @Operation(summary = "Get the current logged-in user")
     public ResponseEntity<ApiResponse<AuthResponse>> me() {
         return ResponseEntity.ok(ApiResponse.of("Current user retrieved successfully", authService.currentUser(), HttpStatus.OK));
+    }
+
+    @PostMapping("/password")
+    @Operation(summary = "Change the current user's password")
+    public ResponseEntity<ApiResponse<Void>> changePassword(@Valid @RequestBody ChangePasswordRequest request) {
+        authService.changePassword(request);
+        return ResponseEntity.ok(ApiResponse.of("Password changed successfully", null, HttpStatus.OK));
     }
 }
