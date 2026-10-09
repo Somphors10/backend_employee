@@ -144,7 +144,7 @@ public class LeaveServiceImpl implements LeaveService {
 
     private LeaveResponse decideLeave(UUID id, LeaveStatus status) {
         Leave leave = findLeave(id);
-        accessService.assertCanViewEmployee(leave.getEmployeeId());
+        accessService.assertCanDecideFor(leave.getEmployeeId());
         if (leave.getStatus() != LeaveStatus.PENDING) {
             throw new InvalidOperationException("Only pending leave requests can be decided");
         }

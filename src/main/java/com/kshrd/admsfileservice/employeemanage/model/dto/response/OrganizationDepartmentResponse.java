@@ -17,13 +17,19 @@ public class OrganizationDepartmentResponse {
     private String name;
     private String description;
     private UUID managerId;
+    private long employeeCount;
 
     public static OrganizationDepartmentResponse from(OrganizationDepartment department) {
+        return from(department, 0);
+    }
+
+    public static OrganizationDepartmentResponse from(OrganizationDepartment department, long employeeCount) {
         return OrganizationDepartmentResponse.builder()
                 .id(department.getId())
                 .name(department.getName())
                 .description(department.getDescription())
                 .managerId(department.getManagerId())
+                .employeeCount(employeeCount)
                 .build();
     }
 }

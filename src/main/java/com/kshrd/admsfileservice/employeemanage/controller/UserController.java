@@ -6,6 +6,8 @@ import com.kshrd.admsfileservice.employeemanage.model.dto.response.ApiResponse;
 import com.kshrd.admsfileservice.employeemanage.model.entity.AppUser;
 import com.kshrd.admsfileservice.employeemanage.model.enums.Role;
 import com.kshrd.admsfileservice.employeemanage.repository.AppUserRepository;
+import com.kshrd.admsfileservice.employeemanage.security.AccessService;
+import com.kshrd.admsfileservice.employeemanage.security.RolePermissions;
 import com.kshrd.admsfileservice.employeemanage.service.EmployeeService;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.tags.Tag;
@@ -33,14 +35,17 @@ public class UserController {
     private final AppUserRepository appUserRepository;
     private final PasswordEncoder passwordEncoder;
     private final EmployeeService employeeService;
+    private final AccessService accessService;
 
     public UserController(
             AppUserRepository appUserRepository,
             PasswordEncoder passwordEncoder,
-            EmployeeService employeeService) {
+            EmployeeService employeeService,
+            AccessService accessService) {
         this.appUserRepository = appUserRepository;
         this.passwordEncoder = passwordEncoder;
         this.employeeService = employeeService;
+        this.accessService = accessService;
     }
 
     @GetMapping
@@ -85,6 +90,7 @@ public class UserController {
     public ResponseEntity<ApiResponse<UserView>> update(@PathVariable UUID id, @RequestBody UserBody body) {
         AppUser user = appUserRepository.findById(id)
                 .orElseThrow(() -> new ResourceNotFoundException("User", id));
+        assertUserMutationAllowed(user, body.role(), body.enabled(), false);
         if (body.role() != null) {
             user.setRole(body.role());
         }
@@ -107,16 +113,43 @@ public class UserController {
     public ResponseEntity<ApiResponse<Void>> delete(@PathVariable UUID id) {
         AppUser user = appUserRepository.findById(id)
                 .orElseThrow(() -> new ResourceNotFoundException("User", id));
+        assertUserMutationAllowed(user, null, false, true);
         appUserRepository.delete(user);
         return ResponseEntity.ok(ApiResponse.of("User deleted successfully", null, HttpStatus.OK));
+    }
+
+    private void assertUserMutationAllowed(AppUser target, Role nextRole, Boolean nextEnabled, boolean deleting) {
+        AppUser me = accessService.currentUser();
+        if (me != null && me.getId().equals(target.getId()) && (deleting || Boolean.FALSE.equals(nextEnabled))) {
+            throw new InvalidOperationException("You cannot disable or delete your own account");
+        }
+        boolean currentlyAdmin = target.getRole() == Role.ADMIN && target.isEnabled();
+        Role resultingRole = nextRole == null ? target.getRole() : nextRole;
+        boolean resultingEnabled = nextEnabled == null ? target.isEnabled() : nextEnabled;
+        boolean remainsAdmin = !deleting && resultingRole == Role.ADMIN && resultingEnabled;
+        if (currentlyAdmin && !remainsAdmin && countEnabledAdmins() <= 1) {
+            throw new InvalidOperationException("Cannot remove the last enabled admin");
+        }
+    }
+
+    private long countEnabledAdmins() {
+        return appUserRepository.findAll().stream()
+                .filter(user -> user.getRole() == Role.ADMIN && user.isEnabled())
+                .count();
     }
 
     public record UserBody(String username, String password, Role role, UUID employeeId, Boolean enabled) {
     }
 
-    public record UserView(UUID id, String username, Role role, UUID employeeId, boolean enabled) {
+    public record UserView(UUID id, String username, Role role, UUID employeeId, boolean enabled, List<String> permissions) {
         static UserView from(AppUser user) {
-            return new UserView(user.getId(), user.getUsername(), user.getRole(), user.getEmployeeId(), user.isEnabled());
+            return new UserView(
+                    user.getId(),
+                    user.getUsername(),
+                    user.getRole(),
+                    user.getEmployeeId(),
+                    user.isEnabled(),
+                    RolePermissions.forRole(user.getRole()));
         }
     }
 }

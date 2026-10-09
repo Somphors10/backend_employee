@@ -54,6 +54,41 @@ public class AccessService {
         return role == Role.ADMIN || role == Role.HR;
     }
 
+    public boolean isHrOrAdmin() {
+        Role role = currentRole();
+        return role == Role.ADMIN || role == Role.HR;
+    }
+
+    public boolean canDecideFor(UUID employeeId) {
+        if (employeeId == null || !isAuthenticated()) {
+            return false;
+        }
+        if (isHrOrAdmin()) {
+            return true;
+        }
+        if (currentRole() != Role.MANAGER) {
+            return false;
+        }
+        UUID me = currentEmployeeId();
+        if (me == null || me.equals(employeeId)) {
+            return false;
+        }
+        return canViewEmployee(employeeId);
+    }
+
+    public void assertCanDecideFor(UUID employeeId) {
+        if (!canDecideFor(employeeId)) {
+            throw new AccessDeniedException("You cannot approve or reject this request");
+        }
+    }
+
+    public void assertCanCorrectAttendance(UUID employeeId) {
+        if (!isHrOrAdmin()) {
+            throw new AccessDeniedException("Only HR or Admin can correct attendance");
+        }
+        assertCanViewEmployee(employeeId);
+    }
+
     public Set<UUID> visibleEmployeeIds() {
         if (canViewCompany()) {
             return null;

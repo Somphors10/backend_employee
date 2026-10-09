@@ -161,7 +161,10 @@ public class EmployeeServiceImpl implements EmployeeService {
 
     @Override
     public EmployeeSummaryResponse getEmployeeSummary() {
-        List<Employee> employees = employeeRepository.findAll();
+        Set<UUID> visible = accessService.visibleEmployeeIds();
+        List<Employee> employees = employeeRepository.findAll().stream()
+                .filter(employee -> visible == null || visible.contains(employee.getId()))
+                .toList();
         long activeEmployees = employees.stream()
                 .filter(employee -> employee.getStatus() == EmploymentStatus.ACTIVE)
                 .count();
@@ -187,6 +190,7 @@ public class EmployeeServiceImpl implements EmployeeService {
     public List<String> getDepartments() {
         return employeeRepository.findAll().stream()
                 .map(Employee::getDepartment)
+                .filter(department -> department != null && !department.isBlank())
                 .distinct()
                 .sorted(String.CASE_INSENSITIVE_ORDER)
                 .toList();

@@ -2,6 +2,7 @@ package com.kshrd.admsfileservice.employeemanage.controller;
 
 import com.kshrd.admsfileservice.employeemanage.exception.GlobalExceptionHandler;
 import com.kshrd.admsfileservice.employeemanage.service.EmployeeService;
+import com.kshrd.admsfileservice.employeemanage.service.OrganizationService;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.webmvc.test.autoconfigure.AutoConfigureMockMvc;
@@ -27,6 +28,9 @@ class EmployeeDepartmentControllerTest {
 
     @MockitoBean
     private EmployeeService employeeService;
+
+    @MockitoBean
+    private OrganizationService organizationService;
 
     @Test
     void getDepartmentsReturnsNames() throws Exception {

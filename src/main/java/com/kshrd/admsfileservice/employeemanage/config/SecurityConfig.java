@@ -71,6 +71,11 @@ public class SecurityConfig {
                         .requestMatchers(HttpMethod.GET, "/api/v1/payrolls/**").hasAuthority("payroll:view")
                         .requestMatchers("/api/v1/payrolls/**").hasAuthority("payroll:write")
 
+                        .requestMatchers(HttpMethod.POST, "/api/v1/employees/departments", "/api/v1/employees/departments/**")
+                        .hasAuthority("organization:write")
+                        .requestMatchers(HttpMethod.PUT, "/api/v1/employees/departments/**").hasAuthority("organization:write")
+                        .requestMatchers(HttpMethod.DELETE, "/api/v1/employees/departments/**").hasAuthority("organization:write")
+
                         .requestMatchers(HttpMethod.POST, "/api/v1/employees").hasAuthority("employees:write")
                         .requestMatchers(HttpMethod.PUT, "/api/v1/employees/**").hasAuthority("employees:write")
                         .requestMatchers(HttpMethod.PATCH, "/api/v1/employees/**").hasAuthority("employees:write")
@@ -79,6 +84,8 @@ public class SecurityConfig {
                         .requestMatchers(HttpMethod.PATCH, "/api/v1/leaves/*/approve").hasAuthority("leaves:decide")
                         .requestMatchers(HttpMethod.PATCH, "/api/v1/leaves/*/reject").hasAuthority("leaves:decide")
                         .requestMatchers("/api/v1/users/**").hasAuthority("users:write")
+                        .requestMatchers(HttpMethod.GET, "/api/v1/rbac/matrix").hasAuthority("roles:view")
+                        .requestMatchers("/api/v1/rbac/**").authenticated()
                         .requestMatchers(HttpMethod.GET, "/api/v1/holidays/**").hasAuthority("holidays:view")
                         .requestMatchers("/api/v1/holidays/**").hasAuthority("holidays:write")
                         .requestMatchers(HttpMethod.GET, "/api/v1/overtimes/**").hasAuthority("overtime:view")

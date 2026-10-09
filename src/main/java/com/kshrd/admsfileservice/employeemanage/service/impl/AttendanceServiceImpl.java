@@ -103,6 +103,7 @@ public class AttendanceServiceImpl implements AttendanceService {
     @Override
     public AttendanceResponse correct(UUID id, AttendanceCorrectionRequest request) {
         Attendance attendance = findAttendance(id);
+        accessService.assertCanCorrectAttendance(attendance.getEmployeeId());
         if (request.getCheckIn() != null) {
             attendance.setCheckIn(request.getCheckIn());
         }

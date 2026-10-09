@@ -26,6 +26,7 @@ public final class RolePermissions {
     );
 
     private static final List<String> MANAGER = concat(EMPLOYEE, List.of(
+            Permission.EMPLOYEES_DIRECTORY,
             Permission.LEAVES_DECIDE,
             Permission.PERFORMANCE_WRITE,
             Permission.OVERTIME_DECIDE
@@ -39,7 +40,8 @@ public final class RolePermissions {
             Permission.ANNOUNCEMENTS_WRITE,
             Permission.SETTINGS_VIEW,
             Permission.HOLIDAYS_WRITE,
-            Permission.REPORTS_VIEW
+            Permission.REPORTS_VIEW,
+            Permission.ROLES_VIEW
     ));
 
     private static final List<String> ADMIN = concat(HR, List.of(
@@ -64,6 +66,15 @@ public final class RolePermissions {
 
     public static boolean has(Role role, String permission) {
         return forRole(role).contains(permission);
+    }
+
+    public static List<RoleAccess> matrix() {
+        return java.util.Arrays.stream(Role.values())
+                .map(role -> new RoleAccess(role.name(), forRole(role)))
+                .toList();
+    }
+
+    public record RoleAccess(String role, List<String> permissions) {
     }
 
     private static List<String> concat(List<String> base, List<String> extra) {

@@ -84,6 +84,46 @@ class SecurityRoleTest {
     }
 
     @Test
+    void employeeCannotReadRbacMatrix() throws Exception {
+        String token = login("sec-employee", "employee123");
+
+        mockMvc.perform(get("/api/v1/rbac/matrix").header("Authorization", "Bearer " + token))
+                .andExpect(status().isForbidden());
+    }
+
+    @Test
+    void adminCanReadRbacMatrix() throws Exception {
+        String token = login("sec-admin", "admin123");
+
+        mockMvc.perform(get("/api/v1/rbac/matrix").header("Authorization", "Bearer " + token))
+                .andExpect(status().isOk());
+    }
+
+    @Test
+    void employeeCannotCreateDepartment() throws Exception {
+        String token = login("sec-employee", "employee123");
+
+        mockMvc.perform(post("/api/v1/employees/departments")
+                        .header("Authorization", "Bearer " + token)
+                        .contentType(MediaType.APPLICATION_JSON)
+                        .content("""
+                                {
+                                  "name": "IT",
+                                  "description": "Engineering"
+                                }
+                                """))
+                .andExpect(status().isForbidden());
+    }
+
+    @Test
+    void employeeCannotReadReports() throws Exception {
+        String token = login("sec-employee", "employee123");
+
+        mockMvc.perform(get("/api/v1/reports/summary").header("Authorization", "Bearer " + token))
+                .andExpect(status().isForbidden());
+    }
+
+    @Test
     void employeeCannotCreateEmployee() throws Exception {
         String token = login("sec-employee", "employee123");
 

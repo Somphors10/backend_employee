@@ -1,9 +1,12 @@
 package com.kshrd.admsfileservice.employeemanage.security;
 
+import java.util.List;
+
 public final class Permission {
     public static final String DASHBOARD_VIEW = "dashboard:view";
 
     public static final String EMPLOYEES_VIEW = "employees:view";
+    public static final String EMPLOYEES_DIRECTORY = "employees:directory";
     public static final String EMPLOYEES_WRITE = "employees:write";
 
     public static final String LEAVES_VIEW = "leaves:view";
@@ -32,6 +35,7 @@ public final class Permission {
     public static final String SETTINGS_WRITE = "settings:write";
 
     public static final String USERS_WRITE = "users:write";
+    public static final String ROLES_VIEW = "roles:view";
     public static final String HOLIDAYS_VIEW = "holidays:view";
     public static final String HOLIDAYS_WRITE = "holidays:write";
     public static final String OVERTIME_VIEW = "overtime:view";
@@ -39,6 +43,26 @@ public final class Permission {
     public static final String OVERTIME_DECIDE = "overtime:decide";
     public static final String REPORTS_VIEW = "reports:view";
     public static final String NOTIFICATIONS_VIEW = "notifications:view";
+
+    public static List<String> all() {
+        return List.of(
+                DASHBOARD_VIEW,
+                EMPLOYEES_VIEW, EMPLOYEES_DIRECTORY, EMPLOYEES_WRITE,
+                LEAVES_VIEW, LEAVES_CREATE, LEAVES_DECIDE,
+                ATTENDANCE_VIEW, ATTENDANCE_CHECK,
+                PAYROLL_VIEW, PAYROLL_WRITE,
+                DOCUMENTS_VIEW, DOCUMENTS_WRITE,
+                PERFORMANCE_VIEW, PERFORMANCE_WRITE,
+                ORGANIZATION_VIEW, ORGANIZATION_WRITE,
+                ANNOUNCEMENTS_VIEW, ANNOUNCEMENTS_WRITE,
+                SETTINGS_VIEW, SETTINGS_WRITE,
+                USERS_WRITE, ROLES_VIEW,
+                HOLIDAYS_VIEW, HOLIDAYS_WRITE,
+                OVERTIME_VIEW, OVERTIME_WRITE, OVERTIME_DECIDE,
+                REPORTS_VIEW,
+                NOTIFICATIONS_VIEW
+        );
+    }
 
     private Permission() {
     }

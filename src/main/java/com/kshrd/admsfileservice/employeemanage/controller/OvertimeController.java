@@ -107,7 +107,7 @@ public class OvertimeController {
     private OvertimeRequest decide(UUID id, RequestStatus status) {
         OvertimeRequest overtime = overtimeRepository.findById(id)
                 .orElseThrow(() -> new ResourceNotFoundException("Overtime", id));
-        accessService.assertCanViewEmployee(overtime.getEmployeeId());
+        accessService.assertCanDecideFor(overtime.getEmployeeId());
         if (overtime.getStatus() != RequestStatus.PENDING) {
             throw new InvalidOperationException("Only pending overtime can be decided");
         }

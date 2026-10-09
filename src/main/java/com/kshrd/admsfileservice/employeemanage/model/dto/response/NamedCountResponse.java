@@ -5,14 +5,15 @@ import lombok.Builder;
 import lombok.Data;
 import lombok.NoArgsConstructor;
 
+import java.math.BigDecimal;
+
 @Data
 @Builder
 @NoArgsConstructor
 @AllArgsConstructor
-public class NavigationItemResponse {
-    private String key;
-    private String label;
-    private String path;
-    private String status;
-    private String permission;
+public class NamedCountResponse {
+    private String name;
+    private long count;
+    private BigDecimal amount;
+    private double percent;
 }
